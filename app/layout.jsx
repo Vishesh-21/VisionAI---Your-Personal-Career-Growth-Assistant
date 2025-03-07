@@ -8,8 +8,8 @@ import { dark } from '@clerk/themes'
 const inter = Inter({subsets:["latin"]});
 
 export const metadata = {
-  title: "VisionAI - AI Career Coach",
-  description: "",
+  title: "Vision AI – Your Career Growth Partner",
+  description: "AI-powered tools for resume building, interview prep, and industry insights—all in one place!",
 };
 
 export default function RootLayout({ children }) {
