@@ -3,12 +3,12 @@ import Link from "next/link";
 
 export default function Footer() {
   return (
-    <footer className="text-white pt-12 pb-6">
-      <div className="max-w-7xl  mx-auto px-6 grid grid-cols-2 md:grid-cols-3 gap-8">
+    <footer className="text-white pt-8 border-t-2 pb-6">
+      <div className="max-w-6xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 place-items-center gap-8">
         {/* Logo and Short Description */}
-        <div>
+        <div className="col-span-2">
           <h2 className="text-2xl font-bold text-blue-400">Vision AI</h2>
-          <p className="text-sm text-gray-400 mt-2">
+          <p className="text-sm text-gray-400 mt-2 w-[430px]">
             Your personal AI assistant for career growth. Get AI-driven
             insights, mock interviews, and resume-building tools.
           </p>

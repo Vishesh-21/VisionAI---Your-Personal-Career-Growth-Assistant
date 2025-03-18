@@ -5,7 +5,6 @@ import {
   Card,
   CardContent,
 } from "@/components/ui/card";
-import Footer from "@/components/Footer";
 import { Testimonials } from "@/components/Testimonials";
 import { Questions } from "@/components/Questions";
 import { Banner } from "@/components/Banner";
@@ -121,9 +120,6 @@ export default function Home() {
 
       {/* banner section for applicaton  */}
       <Banner/>
-
-      {/* footer section of application  */}
-      <Footer/>
     </div>
   );
 }
