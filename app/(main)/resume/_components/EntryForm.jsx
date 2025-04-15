@@ -7,7 +7,6 @@ import {
   Delete,
   Loader2,
   PlusCircle,
-  Sparkle,
   Sparkles,
   X,
 } from "lucide-react";
@@ -27,6 +26,7 @@ import { improveWithAI } from "@/actions/resume";
 import { toast } from "sonner";
 import { format, parse } from "date-fns";
 
+// function to format the date 
 const formatDisplayDate = (dateString) => {
   if (!dateString) return "";
   const date = parse(dateString, "yyyy-MM", new Date());
@@ -40,6 +40,7 @@ export const EntryForm = ({ type, entries, onChange }) => {
     register,
     handleSubmit: handleValidation ,
     formState: { errors },
+    reset,
     watch,
     setValue,
   } = useForm({
@@ -167,7 +168,7 @@ export const EntryForm = ({ type, entries, onChange }) => {
             </div>
 
             {/* date sections  */}
-            <div className="grid grid-cols-2">
+            <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Input
                   type={"month"}

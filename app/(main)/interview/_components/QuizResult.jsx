@@ -39,7 +39,7 @@ export const QuizResult = ({ result, onStartNew, hiddenStartNew = false }) => {
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-medium">{q.question}</p>
                   {q.isCorrect ? (
-                    <CheckCircle2 className="h-5 w-5 text-green-500 text-shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-green-500 flex-shrink-0" />
                   ) : (
                     <XCircle className="h-5 w-5 text-red-500 flex-shrink-0" />
                   )}

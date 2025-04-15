@@ -26,7 +26,7 @@ export const QuizList = ({ assessments }) => {
   return (
     <>
       <Card>
-        <CardHeader className={"flex flex-row items-center justify-between"}>
+        <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className={"gradient-title text-3xl md:text-4xl"}>
               Recent Quizzes
@@ -44,7 +44,7 @@ export const QuizList = ({ assessments }) => {
           <div className="space-y-4">
             {assessments.map((assessment, index) => {
               return (
-                <>
+                <div key={index}>
                   <Card
                     key={assessment.id}
                     className={
@@ -85,7 +85,7 @@ export const QuizList = ({ assessments }) => {
                       <QuizResult result={selectQuiz} onStartNew={() => router.push('/interview/mock')}/>
                     </DialogContent>
                   </Dialog>
-                </>
+                </div>
               );
             })}
           </div>

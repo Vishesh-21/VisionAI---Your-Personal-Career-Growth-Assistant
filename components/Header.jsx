@@ -1,9 +1,4 @@
-import {
-  SignedIn,
-  SignedOut,
-  SignInButton,
-  UserButton,
-} from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
@@ -27,7 +22,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { checkUser } from "@/lib/checkUser";
 
-export const Header =async () => {
+export const Header = async () => {
   await checkUser();
   return (
     <header className="fixed w-full top-0 border-b bg-background/80 backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background/60">
@@ -90,9 +85,10 @@ export const Header =async () => {
             <UserButton
               appearance={{
                 elements: {
-                  avatarBox: "w-10 h-10",
-                  userButtonPopoverCard: "shadow-xl",
-                  userPreviewMainIdentifier: "font-semibold",
+                  userButtonAvatarBox: {
+                    width: "40px",
+                    height: "40px",
+                  },
                 },
               }}
               afterSignOutUrl="/"
