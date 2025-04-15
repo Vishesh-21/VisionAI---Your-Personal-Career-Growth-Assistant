@@ -27,6 +27,7 @@ export const onBoardingSchema = z.object({
   ),
 });
 
+// schema for the contact info
 export const contactSchema = z.object({
   email: z.string().email("Invalid email address"),
   mobile: z.string().optional(),

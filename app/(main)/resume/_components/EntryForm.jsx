@@ -3,13 +3,7 @@
 import { entrySchema } from "@/app/lib/schema";
 import { Button } from "@/components/ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
-import {
-  Delete,
-  Loader2,
-  PlusCircle,
-  Sparkles,
-  X,
-} from "lucide-react";
+import { Delete, Loader2, PlusCircle, Sparkles, X } from "lucide-react";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -26,7 +20,7 @@ import { improveWithAI } from "@/actions/resume";
 import { toast } from "sonner";
 import { format, parse } from "date-fns";
 
-// function to format the date 
+// function to format the date
 const formatDisplayDate = (dateString) => {
   if (!dateString) return "";
   const date = parse(dateString, "yyyy-MM", new Date());
@@ -38,7 +32,7 @@ export const EntryForm = ({ type, entries, onChange }) => {
 
   const {
     register,
-    handleSubmit: handleValidation ,
+    handleSubmit: handleValidation,
     formState: { errors },
     reset,
     watch,
@@ -64,6 +58,7 @@ export const EntryForm = ({ type, entries, onChange }) => {
     error: improvedError,
   } = useFetch(improveWithAI);
 
+  // function to add our entries into our resume
   const handleAdd = handleValidation((data) => {
     const formattedEntry = {
       ...data,
@@ -88,44 +83,51 @@ export const EntryForm = ({ type, entries, onChange }) => {
     }
   }, [improvedContent, improvedError, isImproving]);
 
+  // function to import the description
   const handleImprovedDescription = async () => {
     const description = watch("description");
     if (!description) {
       toast.error("Please enter a description first!");
       return;
     }
-    await improvingWithAIFn({ current: description, type: type.toLowerCase() });
+    await improvingWithAIFn({
+      current: description,
+      type: type.toLowerCase(),
+      organization: watch("organization"),
+    });
   };
 
   const handleDelete = (index) => {
-    const newEntries = entries.filter((_,i) => i !== index);
+    const newEntries = entries.filter((_, i) => i !== index);
     onChange(newEntries);
   };
 
   return (
     <div className="space-y-4">
+      {/* to show the added entries */}
       <div className="space-y-4">
         {entries.map((item, index) => (
           <Card key={index}>
-            <CardHeader className='flex flex-row items-center justify-between space-y-0 pb-2'>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className={"text-sm font-medium"}>
                 {item.title} @ {item.organization}
               </CardTitle>
               <Button
                 variant={"outline"}
-                size={'sm'}
+                size={"sm"}
                 type="button"
-                className='cursor-pointer'
+                className="cursor-pointer"
                 onClick={() => handleDelete(index)}
               >
                 <X className="h-4 w-4" />
               </Button>
             </CardHeader>
+
             <CardContent>
               <p className="text-sm text-muted-foreground">
                 {item.current
                   ? `${item.startDate} - Present`
-                  : `${item.startDate} - ${item - endDate}`}
+                  : `${item.startDate} - ${item.endDate}`}
               </p>
               <p className="mt-2 text-sm whitespace-pre-wrap">
                 {item.description}
@@ -231,6 +233,7 @@ export const EntryForm = ({ type, entries, onChange }) => {
               )}
             </div>
 
+            {/* improve the description with ai */}
             <Button
               type="button"
               variant="ghost"
@@ -245,12 +248,12 @@ export const EntryForm = ({ type, entries, onChange }) => {
                 </>
               ) : (
                 <>
-                  <Sparkles className="h-4 w-4 mr-2 animate-bounce" /> Improve
-                  with AI
+                  <Sparkles className="h-4 w-4 mr-2" /> Improve with AI
                 </>
               )}
             </Button>
           </CardContent>
+
           <CardFooter className="flex justify-end space-x-2">
             <Button
               type="button"
@@ -265,6 +268,7 @@ export const EntryForm = ({ type, entries, onChange }) => {
               <Delete className="w-4 h-4 mr-2" />
               Cancel
             </Button>
+
             <Button
               type="button"
               className="cursor-pointer"
@@ -276,6 +280,7 @@ export const EntryForm = ({ type, entries, onChange }) => {
           </CardFooter>
         </Card>
       )}
+
       {!isAdding && (
         <Button
           className="w-full cursor-pointer"

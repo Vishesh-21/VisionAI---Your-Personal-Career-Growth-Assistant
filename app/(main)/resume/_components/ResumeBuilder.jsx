@@ -23,8 +23,8 @@ import { EntryForm } from "./EntryForm";
 import { entriesToMarkdown } from "@/app/lib/helper";
 import MDEditor from "@uiw/react-md-editor";
 import { useUser } from "@clerk/nextjs";
+import html2pdf from "html2pdf.js";
 import { toast } from "sonner";
-import html2pdf from "html2pdf.js/dist/html2pdf.js";
 
 export const ResumeBuilder = ({ initialContent }) => {
   const [activeTab, setActiveTab] = useState("edit");
@@ -59,8 +59,10 @@ export const ResumeBuilder = ({ initialContent }) => {
     error: saveError,
   } = useFetch(saveResume);
 
+  // see from values in real time
   const formValues = watch();
 
+  // set active tab
   useEffect(() => {
     if (initialContent) setActiveTab("preview");
   }, [initialContent]);
@@ -72,6 +74,7 @@ export const ResumeBuilder = ({ initialContent }) => {
     }
   }, [formValues, activeTab]);
 
+  // function to convert values of contactInfo into markdown formate
   const getContactMarkdown = () => {
     const { contactInfo } = formValues;
     const parts = [];
@@ -82,11 +85,13 @@ export const ResumeBuilder = ({ initialContent }) => {
     if (contactInfo.twitter) parts.push(`🕊️ [Twitter] ${contactInfo.twitter}`);
 
     return parts.length > 0
-      ? `## <div align='center'>${user.fullName}</div>\n\n<div align='center'>
-    \n\n${parts.join(" | ")}\n\n</div>`
+      ? `## <div align='center'>${
+          user.fullName
+        }</div>\n\n<div align='center'>\n\n${parts.join(" | ")}\n\n</div>`
       : "";
   };
 
+  // function to convert the all input values into markdown format
   const getCombinedContent = () => {
     const { summary, skills, experience, education, projects } = formValues;
 
@@ -102,7 +107,23 @@ export const ResumeBuilder = ({ initialContent }) => {
       .join("\n\n");
   };
 
-  const onSubmit = async (data) => {};
+  useEffect(() => {
+    if (saveResult && !isSaving) {
+      toast.success("Resume saved successfully!");
+    }
+    if (saveError) {
+      toast.error(saveError.message || "Failed to save resume!");
+    }
+  }, [saveResult, saveError, isSaving]);
+
+  // function to save our resume in database
+  const onSubmit = async () => {
+    try {
+      await saveResumeFn(previewContent);
+    } catch (error) {
+      console.log("Save error occur:", error);
+    }
+  };
 
   const generatePDF = async () => {
     setIsGenerating(true);
@@ -117,8 +138,7 @@ export const ResumeBuilder = ({ initialContent }) => {
       };
       await html2pdf().set(opt).from(element).save();
     } catch (error) {
-      console.log("Error occur:", error.message);
-      toast.error(error.message || "Error occurred during generating pdf!");
+      console.log("Error occur:", error);
     } finally {
       setIsGenerating(false);
     }
@@ -132,6 +152,7 @@ export const ResumeBuilder = ({ initialContent }) => {
           Resume Builder
         </h1>
         <div className="space-x-2">
+          {/* save resume into database */}
           <Button
             variant={"destructive"}
             className={"cursor-pointer"}
@@ -150,6 +171,8 @@ export const ResumeBuilder = ({ initialContent }) => {
               </>
             )}
           </Button>
+
+          {/* button to download the resume pdf  */}
           <Button
             className={"cursor-pointer"}
             onClick={generatePDF}
@@ -180,11 +203,11 @@ export const ResumeBuilder = ({ initialContent }) => {
             Markdown
           </TabsTrigger>
         </TabsList>
+
         <TabsContent value="edit">
           <form className="space-y-8">
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Contact Information</h3>
-
               {/* contact info inputs  */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg bg-muted/50">
                 <div className="space-y-2">
@@ -203,7 +226,7 @@ export const ResumeBuilder = ({ initialContent }) => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label className={"text-sm font-medium"}>Mobil Number</Label>
+                  <Label className={"text-sm font-medium"}>Mobile Number</Label>
                   <Input
                     {...register("contactInfo.mobile")}
                     type="tel"
@@ -375,6 +398,7 @@ export const ResumeBuilder = ({ initialContent }) => {
             )}
           </Button>
 
+          {/* show just a warning */}
           {resumeMode !== "preview" && (
             <div className="flex p-3 gap-2 items-center border-2 border-yellow-600 text-yellow-600 rounded-lg mb-2">
               <AlertTriangle className="h-5 w-5" />
@@ -397,7 +421,11 @@ export const ResumeBuilder = ({ initialContent }) => {
             <div id="resume-pdf">
               <MDEditor.Markdown
                 source={previewContent}
-                style={{ background: "white", color: "black" }}
+                style={{
+                  background: "white",
+                  color: "black",
+                  padding: "5rem 1rem",
+                }}
               />
             </div>
           </div>

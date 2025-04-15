@@ -72,7 +72,7 @@ export async function getResume() {
 }
 
 //function to improve the resume with the help of ai
-export async function improveWithAI({ current, type }) {
+export async function improveWithAI({ current, type, organization }) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -89,7 +89,7 @@ export async function improveWithAI({ current, type }) {
 
   const prompt = `As an expert resume writer, improve the following ${type} description for a ${user.industry} professional.
 
-  Make it more impactful quantifiable and aligned with industry standards current content : "${current}"
+  Make it more impactful quantifiable and aligned with industry standards current content : "${current}, he/she also provide the organization name : ${organization}"
 
   Requirements : 
   1. Use action verbs
