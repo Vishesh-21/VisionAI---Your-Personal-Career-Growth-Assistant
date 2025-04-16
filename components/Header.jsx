@@ -67,7 +67,7 @@ export const Header = async () => {
                 </DropdownMenuItem>
                 <DropdownMenuItem>
                   <Link
-                    href="/ai_cover_letter"
+                    href="/ai-cover-letter"
                     className="flex items-center gap-2"
                   >
                     <PenBox className="h-4 w-4" />
