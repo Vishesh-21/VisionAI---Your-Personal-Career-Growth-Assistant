@@ -25,8 +25,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend,
-  Rectangle,
   ResponsiveContainer,
 } from "recharts";
 

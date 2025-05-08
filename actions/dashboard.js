@@ -6,11 +6,11 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({
-    model : "gemini-1.5-flash"
-})
+  model: "gemini-1.5-flash",
+});
 
-export const generateAtInsights = async(industry) => {
-    const prompt = `Analyze the current state of the ${industry} industry and provide the insights in only the following json formate without any additional notes or explanations : 
+export const generateAtInsights = async (industry) => {
+  const prompt = `Analyze the current state of the ${industry} industry and provide the insights in only the following json formate without any additional notes or explanations : 
     {
     "salaryRanges" : [
     {"role" : "string","min" : number, "max" : number,"median" : number, "location" : "string"}
@@ -26,16 +26,16 @@ export const generateAtInsights = async(industry) => {
     IMPORTANT : Return only the JSON. No additional text, notes, or markdown formatting.
     Include at least 5 common roles for salary ranges.
     Growth rate should be a percentage.
-    Include at least 5 skills and trends.`
+    Include at least 5 skills and trends.`;
 
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
+  const result = await model.generateContent(prompt);
+  const response = result.response;
+  const text = response.text();
 
-    const cleanText = text.replace(/```(?:json)?\n?/g,"").trim();
+  const cleanText = text.replace(/```(?:json)?\n?/g, "").trim();
 
-    return JSON.parse(cleanText);
-}
+  return JSON.parse(cleanText);
+};
 
 export async function getIndustryInsights() {
   const { userId } = await auth();
@@ -45,23 +45,26 @@ export async function getIndustryInsights() {
     where: {
       clerkUserId: userId,
     },
-    include : {
-      industryInsight : true
-    }
+    include: {
+      industryInsight: true,
+    },
   });
 
   if (!user) throw new Error("User not found");
 
-  if(!user.industryInsight){
+  if (!user.industryInsight) {
+    if (!user.industry) {
+      return;
+    }
     const insights = await generateAtInsights(user.industry);
 
     const industryInsight = await db.industryInsight.create({
-        data : {
-            industry : user.industry,
-            ...insights,
-            nextUpdate : new Date(Date.now()+7*24*60*60*1000)
-        }
-    })
+      data: {
+        industry: user.industry,
+        ...insights,
+        nextUpdate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      },
+    });
 
     return industryInsight;
   }
