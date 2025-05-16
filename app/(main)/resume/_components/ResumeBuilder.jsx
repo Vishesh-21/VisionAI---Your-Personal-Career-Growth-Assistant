@@ -23,8 +23,9 @@ import { EntryForm } from "./EntryForm";
 import { entriesToMarkdown } from "@/app/lib/helper";
 import MDEditor from "@uiw/react-md-editor";
 import { useUser } from "@clerk/nextjs";
-import html2pdf from "html2pdf.js";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import MarkdownIt from "markdown-it";
 
 export const ResumeBuilder = ({ initialContent }) => {
   const [activeTab, setActiveTab] = useState("edit");
@@ -59,10 +60,8 @@ export const ResumeBuilder = ({ initialContent }) => {
     error: saveError,
   } = useFetch(saveResume);
 
-  // see from values in real time
   const formValues = watch();
 
-  // set active tab
   useEffect(() => {
     if (initialContent) setActiveTab("preview");
   }, [initialContent]);
@@ -74,7 +73,6 @@ export const ResumeBuilder = ({ initialContent }) => {
     }
   }, [formValues, activeTab]);
 
-  // function to convert values of contactInfo into markdown formate
   const getContactMarkdown = () => {
     const { contactInfo } = formValues;
     const parts = [];
@@ -91,7 +89,6 @@ export const ResumeBuilder = ({ initialContent }) => {
       : "";
   };
 
-  // function to convert the all input values into markdown format
   const getCombinedContent = () => {
     const { summary, skills, experience, education, projects } = formValues;
 
@@ -116,10 +113,14 @@ export const ResumeBuilder = ({ initialContent }) => {
     }
   }, [saveResult, saveError, isSaving]);
 
-  // function to save our resume in database
   const onSubmit = async () => {
     try {
-      await saveResumeFn(previewContent);
+      const formattedContent = previewContent
+        .replace(/\n/g, "\n")
+        .replace(/\n\s*\n/g, "\n\n")
+        .trim();
+      await saveResumeFn(formattedContent);
+      toast("Resume saved successfully!");
     } catch (error) {
       console.log("Save error occur:", error);
     }
@@ -128,17 +129,40 @@ export const ResumeBuilder = ({ initialContent }) => {
   const generatePDF = async () => {
     setIsGenerating(true);
     try {
-      const element = document.getElementById("resume-pdf");
-      const opt = {
-        margin: [15, 15],
-        filename: "resume.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-      };
-      await html2pdf().set(opt).from(element).save();
+      const md = new MarkdownIt();
+      const htmlContent = md.render(previewContent);
+
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Add basic styling to match Shadcn/Tailwind aesthetics
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+
+      // Split text to fit within page margins (20mm left/right)
+      const textLines = doc.splitTextToSize(
+        previewContent.replace(/[#*`]/g, ""), // Strip markdown symbols for plain text
+        170
+      );
+
+      let yPosition = 20;
+      textLines.forEach((line) => {
+        if (yPosition > 270) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        doc.text(line, 20, yPosition);
+        yPosition += 7; // Line spacing
+      });
+
+      doc.save("resume.pdf");
+      toast.success("PDF downloaded successfully!");
     } catch (error) {
-      console.log("Error occur:", error);
+      console.error("PDF generation error:", error);
+      toast.error("Failed to generate PDF!");
     } finally {
       setIsGenerating(false);
     }
@@ -146,13 +170,11 @@ export const ResumeBuilder = ({ initialContent }) => {
 
   return (
     <div className="space-y-4">
-      {/* heading for page  */}
       <div className="flex flex-col md:flex-row justify-between items-center gap-2">
         <h1 className="font-bold gradient-title text-5xl md:text-6xl">
           Resume Builder
         </h1>
         <div className="space-x-2">
-          {/* save resume into database */}
           <Button
             variant={"destructive"}
             className={"cursor-pointer"}
@@ -172,7 +194,6 @@ export const ResumeBuilder = ({ initialContent }) => {
             )}
           </Button>
 
-          {/* button to download the resume pdf  */}
           <Button
             className={"cursor-pointer"}
             onClick={generatePDF}
@@ -193,7 +214,6 @@ export const ResumeBuilder = ({ initialContent }) => {
         </div>
       </div>
 
-      {/* tabs component  */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className={"space-x-4"}>
           <TabsTrigger value="edit" className={"cursor-pointer"}>
@@ -208,7 +228,6 @@ export const ResumeBuilder = ({ initialContent }) => {
           <form className="space-y-8">
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Contact Information</h3>
-              {/* contact info inputs  */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg bg-muted/50">
                 <div className="space-y-2">
                   <Label className={"text-sm font-medium"}>Email</Label>
@@ -272,7 +291,6 @@ export const ResumeBuilder = ({ initialContent }) => {
               </div>
             </div>
 
-            {/* professional summary  */}
             <div className="space-y-4">
               <h2 className="text-lg font-medium">Professional Summary</h2>
               <Controller
@@ -292,7 +310,6 @@ export const ResumeBuilder = ({ initialContent }) => {
               )}
             </div>
 
-            {/* skills  */}
             <div className="space-y-4">
               <h2 className="text-lg font-medium">Skills</h2>
               <Controller
@@ -312,7 +329,6 @@ export const ResumeBuilder = ({ initialContent }) => {
               )}
             </div>
 
-            {/* work experience  */}
             <div className="space-y-4">
               <h2 className="text-lg font-medium">Work Experience</h2>
               <Controller
@@ -333,7 +349,6 @@ export const ResumeBuilder = ({ initialContent }) => {
               )}
             </div>
 
-            {/* education  */}
             <div className="space-y-4">
               <h2 className="text-lg font-medium">Education</h2>
               <Controller
@@ -354,7 +369,6 @@ export const ResumeBuilder = ({ initialContent }) => {
               )}
             </div>
 
-            {/* projects  */}
             <div className="space-y-4">
               <h2 className="text-lg font-medium">Projects</h2>
               <Controller
@@ -398,7 +412,6 @@ export const ResumeBuilder = ({ initialContent }) => {
             )}
           </Button>
 
-          {/* show just a warning */}
           {resumeMode !== "preview" && (
             <div className="flex p-3 gap-2 items-center border-2 border-yellow-600 text-yellow-600 rounded-lg mb-2">
               <AlertTriangle className="h-5 w-5" />
@@ -424,7 +437,6 @@ export const ResumeBuilder = ({ initialContent }) => {
                 style={{
                   background: "white",
                   color: "black",
-                  padding: "5rem 1rem",
                 }}
               />
             </div>
