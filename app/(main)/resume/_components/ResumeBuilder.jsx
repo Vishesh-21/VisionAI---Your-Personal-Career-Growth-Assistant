@@ -76,16 +76,15 @@ export const ResumeBuilder = ({ initialContent }) => {
   const getContactMarkdown = () => {
     const { contactInfo } = formValues;
     const parts = [];
-    if (contactInfo.email) parts.push(`📨 ${contactInfo.email}`);
-    if (contactInfo.mobile) parts.push(`📞 ${contactInfo.mobile}`);
-    if (contactInfo.linkedin)
-      parts.push(`💼 [LinkedIn] ${contactInfo.linkedin}`);
-    if (contactInfo.twitter) parts.push(`🕊️ [Twitter] ${contactInfo.twitter}`);
+    if (contactInfo.email) parts.push(`${contactInfo.email}`);
+    if (contactInfo.mobile) parts.push(`${contactInfo.mobile}`);
+    if (contactInfo.linkedin) parts.push(`[LinkedIn] ${contactInfo.linkedin}`);
+    if (contactInfo.twitter) parts.push(`[Twitter] ${contactInfo.twitter}`);
 
     return parts.length > 0
-      ? `## <div align='center'>${
+      ? `${
           user.fullName
-        }</div>\n\n<div align='center'>\n\n${parts.join(" | ")}\n\n</div>`
+        }\n\n\n${parts.join(" | ")}\n\n\n`
       : "";
   };
 
@@ -94,14 +93,14 @@ export const ResumeBuilder = ({ initialContent }) => {
 
     return [
       getContactMarkdown(),
-      summary && `## Professional Summary\n\n${summary}`,
-      skills && `## Skills\n\n${skills}`,
+      summary && `## Professional Summary\n\n\n${summary}`,
+      skills && `## Skills\n\n\n${skills}`,
       entriesToMarkdown(experience, "Work Experience"),
       entriesToMarkdown(education, "Education"),
       entriesToMarkdown(projects, "Projects"),
     ]
       .filter(Boolean)
-      .join("\n\n");
+      .join("\n\n\n");
   };
 
   useEffect(() => {
@@ -116,8 +115,8 @@ export const ResumeBuilder = ({ initialContent }) => {
   const onSubmit = async () => {
     try {
       const formattedContent = previewContent
-        .replace(/\n/g, "\n")
-        .replace(/\n\s*\n/g, "\n\n")
+        .replace(/\n/g, "\n\n")
+        .replace(/\n\s*\n/g, "\n\n\n")
         .trim();
       await saveResumeFn(formattedContent);
       toast("Resume saved successfully!");
@@ -132,30 +131,29 @@ export const ResumeBuilder = ({ initialContent }) => {
       const md = new MarkdownIt();
       const htmlContent = md.render(previewContent);
 
+      // Use a temporary DOM element to extract clean text from rendered Markdown
+      const tempElement = document.createElement("div");
+      tempElement.innerHTML = htmlContent;
+      const plainText = tempElement.textContent || tempElement.innerText || "";
+
       const doc = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
       });
 
-      // Add basic styling to match Shadcn/Tailwind aesthetics
       doc.setFont("helvetica", "normal");
       doc.setFontSize(12);
 
-      // Split text to fit within page margins (20mm left/right)
-      const textLines = doc.splitTextToSize(
-        previewContent.replace(/[#*`]/g, ""), // Strip markdown symbols for plain text
-        170
-      );
-
-      let yPosition = 20;
-      textLines.forEach((line) => {
-        if (yPosition > 270) {
+      const lines = doc.splitTextToSize(plainText, 170); // Keep margins
+      let y = 20;
+      lines.forEach((line) => {
+        if (y > 270) {
           doc.addPage();
-          yPosition = 20;
+          y = 20;
         }
-        doc.text(line, 20, yPosition);
-        yPosition += 7; // Line spacing
+        doc.text(line, 20, y);
+        y += 7;
       });
 
       doc.save("resume.pdf");
